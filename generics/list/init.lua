@@ -81,22 +81,24 @@ function list:__tostring()
 	return output
 end
 
+local iterator = 0
+--- Make the list directly iterable in a `for`-loop.
 ---@generic T1
 ---@param self generics.list<T1>
 function list:__call()
-	local i = 0
-	local function iterator()
-		i = i + 1
-		return self[i]
+	if iterator < #self then
+		iterator = iterator + 1
+		return self[iterator]
 	end
 
-	return iterator
+	iterator = 0
 end
 
+---@deprecated
 ---@generic T1
 ---@param self generics.list<T1>
 function list:iter()
-	return self()
+	return self
 end
 
 --- Create a new list and append an item to it.
@@ -118,7 +120,7 @@ end
 function list:__add(ni)
 	local nl = list:new()
 
-	for v in self() do
+	for v in self do
 		table.insert(nl, v)
 	end
 
@@ -155,7 +157,7 @@ end
 function list:__concat(ni)
 	local nl = list:new()
 
-	for v in self() do
+	for v in self do
 		table.insert(nl, v)
 	end
 
@@ -179,7 +181,7 @@ end
 ---@param fn fun(v: T1): T2
 ---@return generics.list<T1> self
 function list:for_each(fn)
-	for v in self() do
+	for v in self do
 		fn(v)
 	end
 end
@@ -192,7 +194,7 @@ end
 function list:map(fn)
 	local nl = list:new()
 
-	for v in self() do
+	for v in self do
 		nl = nl + fn(v)
 	end
 
