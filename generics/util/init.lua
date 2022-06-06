@@ -6,8 +6,5 @@ local function import(module, prefix)
 end
 
 return {
-	class  = import("class"),
-	list   = import("list"),
-	record = import("record"),
-	util   = import("util"),
+	lambda = import("lambda")
 }
