@@ -1,4 +1,5 @@
 ---@class generics.list : table
+---@field new fun(...)
 local list = {
 	__meta = {},
 	__name = "generics.list"
@@ -15,7 +16,7 @@ end
 ---@generic T1
 ---@vararg T1
 ---@return generics.list<T1>
-function list:new(...)
+function list.__meta:new(...)
 	local l = {...}
 	self.__index = self
 	return setmetatable(l, self)
@@ -83,12 +84,15 @@ end
 
 local iterator = 0
 --- Make the list directly iterable in a `for`-loop.
+---
+--- As of 11/06/2202 (MMDDYYYY), this seems to be bugged in LuaJIT
 ---@generic T1
 ---@param self generics.list<T1>
 function list:__call()
 	if iterator < #self then
 		iterator = iterator + 1
-		return self[iterator]
+		local ret = self[iterator]
+		return ret
 	end
 
 	iterator = 0
@@ -173,6 +177,54 @@ end
 ---@param ni generics.list<T2> The new list to concatenate with
 function list:concat(ni)
 	self = self .. ni
+end
+
+---@generic T1
+---@param self generics.list<T1>
+---@return generics.list<T1> copy A copy of the list
+function list:copy()
+	local nl = list:new()
+
+	for v in self do
+		print("X")
+		nl = nl + v
+	end
+
+	return nl
+end
+
+---@generic T1
+---@param self generics.list<T1>
+---@param n number The number of times to replicate the items in the list
+---@return generics.list<T1>
+function list:__mul(n)
+	local floor = math.floor(n)
+	local nl = list:new()
+
+	if floor >= 1 then
+		for i=0, floor do
+			print("D")
+			nl = nl:append(self:copy())
+			print("E")
+		end
+	end
+
+	local items_left = n - floor
+	if items_left > 0 then
+		local i = 0
+		while items_left > 1/#self do
+			items_left = items_left - 1/#self
+			i = i + 1
+			nl:append(self[i])
+		end
+	end
+end
+
+---@generic T1
+---@param self generics.list<T1>
+---@param n number The new list to concatenate with
+function list:multiply(n)
+	self = self * n
 end
 
 --- Call a function for each item in the list.
